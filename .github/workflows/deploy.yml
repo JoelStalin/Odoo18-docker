@@ -23,13 +23,6 @@ jobs:
           username: ${{ secrets.PROD_SSH_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
-            cd /home/ubuntu/odoo18-docker # <<< --- PATH UPDATED TO /home/ubuntu/odoo18-docker ---
-            git pull origin main # Pull the latest changes
-            # Run your Docker commands (e.g., from your restart.sh or the pip install commands)
-            docker-compose down
-            docker-compose pull # Pull latest images if your images change
-            docker-compose up --build -d
-            docker exec -it -uroot odoo18-docker-odoo18-1 /bin/bash -c '\''
-                apt update && apt install -y python3.12-venv xfonts-base fontconfig &&                 cd /mnt/extra-addons/extra/exo_api/ && python3 -m venv venv &&                 ./venv/bin/pip install -r requirements.txt &&                 cd /mnt/extra-addons/neo_do_localization && python3 -m venv venv &&                 ./venv/bin/pip install -r requirements.txt
-            '\''
-            docker-compose restart
+            cd /home/ubuntu/odoo18-docker
+            git pull origin main
+            ./restart.sh
