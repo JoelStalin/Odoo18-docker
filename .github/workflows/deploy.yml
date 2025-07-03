@@ -1,0 +1,35 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main # This workflow runs when changes are pushed to the 'main' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Or a self-hosted runner if your server needs direct access
+    environment:
+      name: production # This links to the 'production' environment you configured
+      url: http://contabilidadtest2.flai.com.do/ # Optional: URL to your live Odoo instance
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to production server via SSH
+        uses: appleboy/ssh-action@master # A common action for SSH
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }} # Store sensitive data as GitHub Secrets
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/odoo18-docker # <<< --- PATH UPDATED TO /home/ubuntu/odoo18-docker ---
+            git pull origin main # Pull the latest changes
+            # Run your Docker commands (e.g., from your restart.sh or the pip install commands)
+            docker-compose down
+            docker-compose pull # Pull latest images if your images change
+            docker-compose up --build -d
+            docker exec -it -uroot odoo18-docker-odoo18-1 /bin/bash -c '\''
+                apt update && apt install -y python3.12-venv xfonts-base fontconfig &&                 cd /mnt/extra-addons/extra/exo_api/ && python3 -m venv venv &&                 ./venv/bin/pip install -r requirements.txt &&                 cd /mnt/extra-addons/neo_do_localization && python3 -m venv venv &&                 ./venv/bin/pip install -r requirements.txt
+            '\''
+            docker-compose restart
