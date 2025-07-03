@@ -1,0 +1,41 @@
+# Odoo specific
+*.pyc
+*.o_pyc
+__pycache__/
+.ipynb_checkpoints/
+*.log
+*.pot
+
+# Virtual Environment
+venv/
+.venv/
+*.egg-info/
+.tox/
+.mypy_cache/
+.pytest_cache/
+
+# Docker specific
+*.swp
+.dockerignore
+*.env
+.idea/
+# Potentially for your database data volume if it's inside the project root
+# e.g., if you have a 'data' directory for postgres volumes
+# data/
+
+# Local configuration files that should not be in git
+config/odoo.conf
+postgres-config/pg_hba.conf
+postgres-config/postgresql.conf
+
+# Files created by your scripts
+# For example, if your 'restart.sh' creates log files
+# logs/
+
+# External add-ons that are managed by git submodules or should be excluded
+# If some of your extra-addons are external repos, you might want to manage them as submodules
+# or exclude them if they are too large or frequently change.
+# For now, let's keep them if they are part of your custom development.
+
+# If you have specific build artifacts or temporary files for your custom modules:
+# /mnt/extra-addons/extra/exo_api/venv/ # Already covered by venv/

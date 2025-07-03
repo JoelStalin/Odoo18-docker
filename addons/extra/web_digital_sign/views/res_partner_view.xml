@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+
+    <record id="view_partner_sign_property_form" model="ir.ui.view">
+        <field name="name">res.partner.property.sign.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="priority">5</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="vat" position="after">
+                <field name="pending_to_sign" force_save="1" readonly="1"/>
+            </field>
+            <notebook>
+                <page string="Firma y Consentimiento" name="my_configuration" style="color: red">
+                    <group>
+
+                        <p invisible="pending_to_sign"> Estoy de
+                            acuerdo que contacto tiene configurado los siguientes puntos: <ul>
+
+                                <li>
+                                    <field name="change_text" readonly="1"/>
+
+                                </li>
+
+                            </ul>
+                        </p>
+
+                        <field name="pending_to_sign" invisible="1"/>
+                        <label for="digital_signature" string="Firma" class="oe_edit_only" invisible="pending_to_sign"/>
+                        <h2 invisible="pending_to_sign">
+                            <field name="digital_signature" widget="signature" required="not pending_to_sign"/>
+                        </h2>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>
