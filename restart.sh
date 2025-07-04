@@ -1,5 +1,8 @@
 docker-compose down
 docker-compose up --build -d
+docker cp install_wkhtmltopdf_and_fonts.sh odoo18-docker-odoo18-1:/tmp/install_wkhtmltopdf_and_fonts.sh
+docker exec -it -uroot odoo18-docker-odoo18-1 chmod +x /tmp/install_wkhtmltopdf_and_fonts.sh
+docker exec -it -uroot odoo18-docker-odoo18-1 /tmp/install_wkhtmltopdf_and_fonts.sh
 docker exec -it -uroot odoo18-docker-odoo18-1 /bin/bash -c '
     echo "Updating package list and installing system dependencies..."
     apt update && \
