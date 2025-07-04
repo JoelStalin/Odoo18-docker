@@ -5,10 +5,6 @@ docker exec -it -uroot odoo18-docker-odoo18-1 chmod +x /tmp/install_wkhtmltopdf_
 docker exec -it -uroot odoo18-docker-odoo18-1 /tmp/install_wkhtmltopdf_and_fonts.sh
 docker exec -it -uroot odoo18-docker-odoo18-1 /bin/bash -c '
     echo "Updating package list and installing system dependencies..."
-    apt update && \
-    apt install -y python3.12-venv python3-pip xfonts-base fontconfig ttf-mscorefonts-installer wget && \
-    echo "Updating font cache..." && \
-    fc-cache -f -v && \
     
     EXO_API_DIR="/mnt/extra-addons/extra/exo_api"
     NEO_DO_LOC_DIR="/mnt/extra-addons/neo_do_localization"
