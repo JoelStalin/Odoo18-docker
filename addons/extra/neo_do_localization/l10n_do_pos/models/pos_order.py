@@ -45,7 +45,7 @@ class PosOrder(models.Model):
 
     @api.model
     def _order_fields(self, ui_order):
-        fields = super(PosOrder, self)._order_fields(ui_order)
+        fields = super()._order_fields(ui_order)
         if ui_order.get("to_invoice", False):
             fields.update(
                 {
@@ -95,12 +95,12 @@ class PosOrder(models.Model):
         self.l10n_do_ncf_expiration_date = self.account_move.l10n_do_ncf_expiration_date
 
         if not self.l10n_do_is_return_order:
-            super(PosOrder, self)._apply_invoice_payments()
+            super()._apply_invoice_payments()
 
         self._apply_creadit_note_payments()
 
     def _export_for_ui(self, order):
-        order_ui = super(PosOrder, self)._export_for_ui(order)
+        order_ui = super()._export_for_ui(order)
         order_ui.update(
             {
                 "l10n_latam_document_number": order.l10n_latam_document_number,
@@ -118,7 +118,7 @@ class PosOrder(models.Model):
             and order.l10n_do_is_return_order
         ):
             return True
-        return super(PosOrder, self)._is_pos_order_paid()
+        return super()._is_pos_order_paid()
 
     def action_pos_order_paid(self):
         self.ensure_one()
@@ -148,14 +148,14 @@ class PosOrder(models.Model):
                 }
             )
         elif not self.l10n_do_is_return_order:
-            super(PosOrder, self).add_payment(data)
+            super().add_payment(data)
 
         self.amount_paid = sum(self.payment_ids.mapped("amount")) + sum(
             self.l10n_do_payment_credit_note_ids.mapped("amount")
         )
 
     def action_pos_order_invoice(self):
-        res = super(PosOrder, self).action_pos_order_invoice()
+        res = super().action_pos_order_invoice()
         for order in self:
             if order.l10n_do_is_return_order:
                 order.sudo().write({"state": "is_l10n_do_return_order"})
@@ -181,7 +181,7 @@ class PosOrder(models.Model):
         return res
 
     def _process_payment_lines(self, pos_order, order, pos_session, draft):
-        super(PosOrder, self)._process_payment_lines(
+        super()._process_payment_lines(
             pos_order, order, pos_session, draft
         )
         order.amount_paid = sum(order.payment_ids.mapped("amount")) + sum(
@@ -191,7 +191,7 @@ class PosOrder(models.Model):
             order.payment_ids.unlink()
 
     def _prepare_invoice_vals(self):
-        invoice_vals = super(PosOrder, self)._prepare_invoice_vals()
+        invoice_vals = super()._prepare_invoice_vals()
         documents = self.config_id.invoice_journal_id.l10n_latam_use_documents
         if documents and self.to_invoice:
             invoice_vals["l10n_latam_document_number"] = self.l10n_latam_document_number
@@ -247,7 +247,7 @@ class PosOrder(models.Model):
 
     @api.model
     def _payment_fields(self, order, ui_paymentline):
-        res = super(PosOrder, self)._payment_fields(order, ui_paymentline)
+        res = super()._payment_fields(order, ui_paymentline)
         res.update(
             {
                 "note": ui_paymentline.get("note"),
@@ -257,7 +257,7 @@ class PosOrder(models.Model):
         return res
 
     # def _prepare_refund_values(self, current_session):
-    #     vals = super(PosOrder, self)._prepare_refund_value(current_session)
+    #     vals = super()._prepare_refund_value(current_session) # Original: super(PosOrder, self)
     #     if self.l10n_latam_document_type_id:
     #         ncf_nc_type = self.env.ref('l10n_do_accounting.ncf_credit_note_client')
     #         vals.update({
@@ -268,7 +268,7 @@ class PosOrder(models.Model):
     #     return vals
 
     def _get_fields_for_draft_order(self):
-        fields = super(PosOrder, self)._get_fields_for_draft_order()
+        fields = super()._get_fields_for_draft_order()
         fields.extend(
             [
                 "l10n_do_origin_ncf",

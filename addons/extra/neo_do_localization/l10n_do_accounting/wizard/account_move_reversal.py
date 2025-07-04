@@ -73,13 +73,13 @@ class AccountMoveReversal(models.TransientModel):
                 move.l10n_latam_manual_document_number
             )
 
-        super(
-            AccountMoveReversal, self - l10n_do_recs
-        )._compute_l10n_latam_manual_document_number()
+        remaining_recs = self - l10n_do_recs
+        if remaining_recs:
+            super(AccountMoveReversal, remaining_recs)._compute_l10n_latam_manual_document_number()
 
     @api.model
-    def default_get(self, fields):
-        res = super(AccountMoveReversal, self).default_get(fields)
+    def default_get(self, fields_list): # Corregido: fields a fields_list
+        res = super().default_get(fields_list) # Corregido: fields a fields_list
         move_ids = (
             self.env["account.move"].browse(self.env.context["active_ids"])
             if self.env.context.get("active_model") == "account.move"
@@ -113,13 +113,12 @@ class AccountMoveReversal(models.TransientModel):
             self.refund_method = "refund"
 
     def reverse_moves(self):
-
-        return super(
-            AccountMoveReversal,
-            self.with_context(
+        # El with_context se puede aplicar directamente a self si es un recordset.
+        # Si self es un single record, también funciona.
+        return super(AccountMoveReversal, self.with_context(
                 refund_type=self.refund_type,
                 percentage=self.percentage,
                 amount=self.amount,
                 reason=self.reason,
-            ),
+            )
         ).reverse_moves()

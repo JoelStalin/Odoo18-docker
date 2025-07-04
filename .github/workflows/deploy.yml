@@ -1,0 +1,28 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main # This workflow runs when changes are pushed to the 'main' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Or a self-hosted runner if your server needs direct access
+    environment:
+      name: production # This links to the 'production' environment you configured
+      url: http://contabilidadtest2.flai.com.do/ # Optional: URL to your live Odoo instance
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to production server via SSH
+        uses: appleboy/ssh-action@master # A common action for SSH
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }} # Store sensitive data as GitHub Secrets
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/odoo18-docker
+            git pull origin main
+            ./restart.sh
