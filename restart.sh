@@ -18,7 +18,7 @@ docker exec -it -uroot odoo18-docker-odoo18-1 /bin/bash -c '
         source venv/bin/activate && \
         if [ -f "requirements.txt" ]; then
             echo "Installing requirements for exo_api..." && \
-            pip install --no-cache-dir -r requirements.txt && \
+            pip install -r requirements.txt && \
             echo "exo_api requirements installed."
         else
             echo "requirements.txt not found in $EXO_API_DIR"
@@ -37,7 +37,7 @@ docker exec -it -uroot odoo18-docker-odoo18-1 /bin/bash -c '
         source venv/bin/activate && \
         if [ -f "requirements.txt" ]; then
             echo "Installing requirements for neo_do_localization..." && \
-            pip install --no-cache-dir -r requirements.txt && \
+            pip install -r requirements.txt && \
             echo "neo_do_localization requirements installed."
         else
             echo "requirements.txt not found in $NEO_DO_LOC_DIR"
