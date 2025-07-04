@@ -1,6 +1,7 @@
 {   'author': 'Joel S. Martinez espinal',
     'data': ['security/ir.model.access.csv', 'views/auth_api_key.xml'],
     'development_status': 'Beta',
+    'depends': ['base', 'exo_api'],
     'license': 'LGPL-3',
     'maintainers': ['Joel S. Martinez espinal'],
     'name': 'Auth Api Key',

@@ -85,7 +85,7 @@ class AccountMove(models.Model):
                 else self.l10n_do_expense_type
             )
 
-        return super(AccountMove, self)._onchange_partner_id()
+        return super()._onchange_partner_id()
 
     def _get_l10n_latam_documents_domain(self):
         self.ensure_one()
@@ -160,7 +160,12 @@ class AccountMove(models.Model):
         )
         for rec in recs_with_name:
             rec.l10n_latam_document_number = rec.name
-        super(AccountMove, self - recs_with_name)._compute_l10n_latam_document_number()
+
+        # Para llamar a super() en el recordset restante:
+        remaining_recs = self - recs_with_name
+        if remaining_recs:
+            super(AccountMove, remaining_recs)._compute_l10n_latam_document_number()
+        # Nota: Si self - recs_with_name está vacío, la llamada a super() no se hace, lo cual es correcto.
 
     @api.onchange("l10n_latam_document_type_id", "l10n_latam_document_number")
     def _inverse_l10n_latam_document_number(self):
@@ -181,7 +186,10 @@ class AccountMove(models.Model):
                 if rec.l10n_latam_document_number != l10n_latam_document_number:
                     rec.l10n_latam_document_number = l10n_latam_document_number
                 rec.name = l10n_latam_document_number
-        super(AccountMove, self - do_invoice)._inverse_l10n_latam_document_number()
+
+        remaining_recs = self - do_invoice
+        if remaining_recs:
+            super(AccountMove, remaining_recs)._inverse_l10n_latam_document_number()
 
     def _is_manual_document_number(self):
         if self.l10n_latam_document_type_id and self.is_purchase_document():
@@ -206,7 +214,7 @@ class AccountMove(models.Model):
             raise UserError(
                 _("You cannot delete fiscal invoice which have been posted before")
             )
-        return super(AccountMove, self).unlink()
+        return super().unlink()
 
     def _reverse_move_vals(self, default_values, cancel=True):
         ctx = self.env.context
@@ -215,7 +223,7 @@ class AccountMove(models.Model):
         refund_type = ctx.get("refund_type")
         reason = ctx.get("reason")
 
-        res = super(AccountMove, self)._reverse_move_vals(
+        res = super()._reverse_move_vals(
             default_values=default_values, cancel=cancel
         )
         if self.country_code != "DO":
@@ -260,7 +268,7 @@ class AccountMove(models.Model):
             action["context"] = {"default_move_id": fiscal_invoice.id}
             return action
 
-        return super(AccountMove, self).button_cancel()
+        return super().button_cancel()
 
     def action_reverse(self):
         fiscal_invoice = self.filtered(
@@ -272,7 +280,7 @@ class AccountMove(models.Model):
         ):
             raise AccessError(_("You are not allowed to issue Fiscal Credit Notes"))
 
-        return super(AccountMove, self).action_reverse()
+        return super().action_reverse()
 
     # -------------------------------------------------------------------------
     # SEQUENCE HACK

@@ -50,13 +50,13 @@ class AuthApiKey(models.Model):
 
     @api.model
     def create(self, vals):
-        record = super(AuthApiKey, self).create(vals)
+        record = super().create(vals)
         if "key" in vals or "user_id" in vals:
             self._clear_key_cache()
         return record
 
     def write(self, vals):
-        super(AuthApiKey, self).write(vals)
+        super().write(vals)
         if "key" in vals or "user_id" in vals:
             self._clear_key_cache()
         return True

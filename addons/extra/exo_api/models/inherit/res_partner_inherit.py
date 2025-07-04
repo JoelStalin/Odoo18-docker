@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 class partner_benefit_discount(models.Model):
     _name="partner.benefit.discount"
-    
+
     name = fields.Char(compute="_compute_name", required=False, copy=False, store=True)
     partner_id = fields.Many2one('res.partner', string="Proveedor", required=True, domain=lambda self: [('internal_partner_type','=', 'transporter')])
     product_quantity = fields.Integer("Cantidad", default=1, required=True)
@@ -30,7 +30,7 @@ class partner_benefit_discount(models.Model):
 class ResPartnerObject(models.Model):
     _name = "res.partner.object"
     _description = "Res Partner Object Id"
-    
+
     partner_id = fields.Many2one('res.partner', string="Transportista", required=True, domain=lambda self: [('internal_partner_type','=', 'transporter')], ondelete="cascade")
     name = fields.Char("Id del Transportista")
     description = fields.Text("Descripción o Nombre del Transportista")
@@ -41,7 +41,7 @@ class partner_inherit(models.Model):
     _sql_constraints = [
         ('unique_vat', 'unique(vat)', "El registro existe. No se permiten duplicados.")
     ]
-    
+
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -89,14 +89,14 @@ class partner_inherit(models.Model):
         # Asegúrate de asignar una tupla Many2many (6, 0, ids)
         res['load_statuses'] = [(6, 0, status_ids)]
         return res
-   
+
     @api.onchange('vat')
     def _onchange_vat(self):
         if self.vat:
             self.vat = self.vat.replace("-", "").replace('\t', '').replace(' ', '')
             self.document_type = 'c' if len(self.vat) == 11 else 'r'
 
-    
+
     @api.onchange('internal_partner_type')
     def _onchange_internal_partner_type(self):
         if self.internal_partner_type == 'transporter' :
@@ -107,15 +107,15 @@ class partner_inherit(models.Model):
             self.apply_other_deductions = True
             if not self.insurance_percent or self.insurance_percent == 0:
                 self.insurance_percent = 0.02
-                
+
             if not self.load_payment_term_id:
                 self.load_payment_term_id = self.env['load.payment.term'].search([('type_freq', '=', 'fortnight')], limit=1)
-                
+
             if not self.load_statuses or len(self.load_statuses) == 0:
                 self.load_statuses = self.env['partner.load.status'].search([('name', 'in', ["Waiting For CLC approval", "CLC Approved", "In Accounting"])])
             if not self.exo_load_start_date:
                 self.exo_load_start_date = datetime(2024, 7, 1, 0, 0, 0)
-            
+
         elif self.internal_partner_type == 'shipper':
             self.search_by_warehouse = True
             self.group_by_warehouse = True
@@ -123,8 +123,8 @@ class partner_inherit(models.Model):
             self.create_by_automatic_load = True
             self.group_by_payment_term = True
             self.rounded_money = True
-        
-        
+
+
     @api.model
     def create(self, vals):
         _logger.info("____________ VALS")
@@ -140,27 +140,27 @@ class partner_inherit(models.Model):
                 if len(to_insert_exo_transporters) == 0:
                     raise ValidationError(f"No se encontraron transportistas con el número de identificación (RNC) {vals['vat']}")
                 vals['partner_object_ids'] = to_insert_exo_transporters
-            
-        partner =  super(partner_inherit, self).create(vals)
+
+        partner =  super().create(vals) # Cambio aquí
         self.validate_and_edit(partner)
         return partner
 
     def write(self, vals):
         vals['pending_to_sign'] = True
-        
+
         if vals.get('vat', None) or vals.get('internal_partner_type', None) == 'transporter':
-            
+
             internal_partner_type = vals.get('internal_partner_type', None) or self.internal_partner_type
-            
+
             to_insert_exo_transporters = self.get_exo_transporters(vals.get('vat', self.vat), [obj.name for obj in (self.partner_object_ids or [])])
 
             if internal_partner_type and len(to_insert_exo_transporters) == 0 and not self.partner_object_ids:
                 raise ValidationError(f"No se encontraron transportistas con el número de identificación (RNC) {vals['vat']}")
             vals['partner_object_ids'] = to_insert_exo_transporters
-            
-        partner = super(partner_inherit, self).write(vals)
+
+        partner = super().write(vals) # Cambio aquí
         self.validate_and_edit(self)
-        
+
         return partner
 
     def get_exo_transporters(self, vat, existing_transporter_ids = []):
@@ -171,35 +171,35 @@ class partner_inherit(models.Model):
             if transporter.get('_id', None) not in existing_transporter_ids:
                 to_insert.append((0, 0, { 'name': transporter.get('_id', None), 'description': transporter.get('company_name', None) }))
         return to_insert
-    
+
     def set_exo_transporters(self):
         self.ensure_one()
         to_insert = self.get_exo_transporters(self.vat, [obj.name for obj in (self.partner_object_ids or [])])
-        
+
         has_data = self.partner_object_ids and len(self.partner_object_ids) > 0
-            
+
         self.partner_object_ids = to_insert if to_insert else None
 
         if len(to_insert) == 0 and not has_data:
             raise ValidationError(f"No se encontraron transportistas con el número de identificación (RNC) {self.vat}")
-        
+
         return  {'type': 'ir.actions.client', 'tag': 'reload'}
-        
-            
-        
+
+
+
     def validate_and_edit(self, records):
         for partner in records:
             if partner.internal_partner_type == 'transporter':
                 if not partner.company_id:
                     raise ValidationError("La compañía es requerida.")
-                
+
                 if partner.company_id.code != 'EXOB':
                     raise ValidationError("La compañía debe ser EXO BUSINESS CONSULTING SRL")
-                
+
                 required_statuses = ["Waiting For CLC approval", "CLC Approved", "In Accounting"]
-            
+
                 current_statuses = partner.load_statuses.mapped('name')
-                
+
                 missing_statuses = [status for status in required_statuses if status not in current_statuses]
                 if missing_statuses:
                     raise ValidationError(
@@ -208,52 +208,52 @@ class partner_inherit(models.Model):
                     )
                 if not partner.exo_load_start_date:
                     raise ValidationError("Debe seleccionar una fecha inicial para cargar las facturas de EXO.")
-                
+
                 if not partner.create_by_automatic_load:
                     raise ValidationError(f"Debe seleccionar la opción 'Permite que a este cliente se le creen facturas internamente a media noche' para {partner.name} / {partner.id}.")
-                
-                
+
+
                 if not partner.load_payment_term_id:
                     raise ValidationError("Debe seleccionar una Frecuencia de Facturación.")
 
-    
+
     @api.depends('invoice_ids.payment_id')
     def _compute_last_payment(self):
         for partner in self:
             payments = partner.invoice_ids.mapped('payment_id').filtered(lambda p: p.state == 'posted')
-            
+
             partner.last_payment_id = False
             if payments:
                 last_payment = max(payments, key=lambda p: p.date)
                 partner.last_payment_id = last_payment
-        
+
     def add_additional_tax(self, current_env, tax_ids):
         self.ensure_one()
         # Para Cedulas > 2% seguro de Carga y 2% para impuestos sobre la renta
         # Para RNC > 2% seguro de Carga
-        
+
         if (self['apply_other_deductions']):
-            
+
             other_deductions_2_percent = current_env['account.tax'].sudo().search([('tax_code', '=', '2OR')], limit=1)
             if not other_deductions_2_percent:
                 raise ValidationError("El impuesto (Otras Retenciones 2%) no fue encontrado, revise si existe un impuesto con el codigo 2OR")
-            
-            if other_deductions_2_percent.id not in tax_ids: 
+
+            if other_deductions_2_percent.id not in tax_ids:
                 tax_ids.append(other_deductions_2_percent.id)
-                
+
     def transform_rnc(self, rnc):
         return rnc.replace("-", "").replace('\t', '').replace(' ', '')
-    
+
     def create_user_from_partner(self):
         user_group = self.env.ref("base.group_portal") or False
         users_res = self.env['res.users']
         documentNumber = self.transform_rnc(self['vat'])
-        
+
         exists_login = users_res.sudo().search([('login', '=', documentNumber)], limit=1)
         if (exists_login):
             return exists_login[0]
-            
-        
+
+
         if (len(self.user_ids) > 0):
             return self.user_ids[0]
 
@@ -271,12 +271,12 @@ class partner_inherit(models.Model):
             _logger.info("________________ login info")
             user_id = users_res.create(login_info)
             return user_id
-        
-    
+
+
     def get_benefits_line_to_create_to_this_months(self, current_env = None):
         current_env = current_env if current_env else request.env
         self.ensure_one()
-        
+
         benefits_line_to_create = []
         current_date = datetime.now()
         _logger.info("________________ ********** get get_benefits_line_to_create_to_this_months ******* _________________")
@@ -308,11 +308,11 @@ class partner_inherit(models.Model):
         _logger.info("****************** benefits_line_to_create -*  ****************** ")
         _logger.info(benefits_line_to_create)
         return benefits_line_to_create
-    
+
     def get_unique_benefits_line_to_create_to_this_months(self, current_env = None):
         current_env = current_env if current_env else request.env
         self.ensure_one()
-        
+
         current_date = datetime.now()
         current_month_partner_lines = current_env['unique.benefit.discount'].sudo().search([
             ('partner_id', '=', self.id),
