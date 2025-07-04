@@ -1,33 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <template id="web_address_layout_inherited" inherit_id="web.address_layout">
-        <!-- do not show company address on document header  -->
-        <xpath expr="//t[@t-if='address']/div" position="attributes">
+    <!--
+        Este template hereda del layout de dirección estándar de Odoo.
+        El objetivo es ocultar la dirección de la compañía en el encabezado
+        de los reportes de factura (account.move) cuando la compañía es de
+        República Dominicana (DO). Esto se hace porque la información de la
+        compañía emisora ya se muestra de forma prominente en otra parte
+        del layout personalizado para facturas dominicanas
+        (ver report_invoice.xml).
+    -->
+    <template id="l10n_do_address_layout_hide_company_on_do_invoice" inherit_id="web.address_layout">
+        <!--
+            El XPath original era "//t[@t-if='address']/div".
+            Se asume que 'address' aquí se refiere a la dirección de la compañía (company.partner_id.address_get()).
+            La condición t-if="address" es de la plantilla base.
+            El div interno es el que contiene la dirección.
+            La estructura general de web.address_layout suele ser:
+            <t t-if="address">
+                <div>... dirección ...</div>
+            </t>
+            Así que el XPath parece razonable.
+        -->
+        <xpath expr="//div[hasclass('address')]" position="attributes">
+            <!--
+                Condición para ocultar:
+                - Si el modelo del documento (doc_model) NO es 'account.move' (es decir, es cualquier otro reporte), se muestra.
+                - O, si ES 'account.move', pero el código de país del objeto del reporte (o.country_code, que sería o.company_id.country_id.code) NO es 'DO', también se muestra.
+                - Por lo tanto, SOLO SE OCULTA si doc_model ES 'account.move' Y o.country_code ES 'DO'.
+
+                Se asume que 'o' es el objeto principal del reporte (ej. account.move) y tiene un campo 'country_code'
+                o que 'country_code' está disponible en el contexto del reporte de alguna manera.
+                Para account.move, 'o.company_id.country_id.code' sería más explícito si 'o.country_code' no existe.
+                Sin embargo, 'o.country_code' es una convención en algunos reportes estándar.
+                Se mantendrá o.country_code asumiendo que está correctamente poblado en el contexto del reporte de factura.
+            -->
+            <attribute name="t-if">address and (doc_model != 'account.move' or (doc_model == 'account.move' and o.country_code != 'DO'))</attribute>
+        </xpath>
+    </template>
+
+    <!--
+        Las siguientes herencias a layouts externos específicos están comentadas.
+        Es probable que la modificación a "web.address_layout" (arriba) sea suficiente,
+        ya que los layouts externos suelen reutilizar web.address_layout para mostrar la dirección.
+        Si se determina que estas herencias específicas son necesarias, deberán ser
+        descomentadas y sus XPaths validados contra las plantillas base de Odoo 18.
+        Por ahora, se mantendrán comentadas o se eliminarán para limpieza si la
+        herencia de web.address_layout es efectiva.
+        Para este refactor, se eliminarán para mayor claridad, asumiendo que la
+        modificación a web.address_layout es la principal y suficiente.
+    -->
+
+    <!--
+    <template id="external_layout_clean_inherited" inherit_id="web.external_layout_clean">
+        <xpath expr="//div[hasclass('o_clean_header')]/div/div[@name='company_address']" position="attributes">
             <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute>
         </xpath>
     </template>
 
-    <!-- do not show partner address on document header when l10n do invoice -->
-    <!-- <template id="external_layout_clean_inherited" inherit_id="web.external_layout_clean"> -->
-    <!--     <xpath expr="//div[hasclass('o_clean_header')]/div/div[@name='company_address']" position="attributes"> -->
-    <!--         <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute> -->
-    <!--     </xpath> -->
-    <!-- </template> -->
-    <!-- <template id="external_layout_standard_inherited" inherit_id="web.external_layout_standard"> -->
-    <!--     <xpath expr="//div[@name='company_address']" position="attributes"> -->
-    <!--         <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute> -->
-    <!--     </xpath> -->
-    <!-- </template> -->
-    <!-- <template id="external_layout_background_inherited" inherit_id="web.external_layout_background"> -->
-    <!--     <xpath expr="//div[hasclass('company_address')]" position="attributes"> -->
-    <!--         <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute> -->
-    <!--     </xpath> -->
-    <!-- </template> -->
-    <!-- <template id="external_layout_boxed_inherited" inherit_id="web.external_layout_boxed"> -->
-    <!--     <xpath expr="//div[@name='company_address']" position="attributes"> -->
-    <!--         <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute> -->
-    <!--     </xpath> -->
-    <!-- </template> -->
+    <template id="external_layout_standard_inherited" inherit_id="web.external_layout_standard">
+        <xpath expr="//div[@name='company_address']" position="attributes">
+            <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute>
+        </xpath>
+    </template>
+
+    <template id="external_layout_background_inherited" inherit_id="web.external_layout_background">
+        <xpath expr="//div[hasclass('company_address')]" position="attributes">
+            <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute>
+        </xpath>
+    </template>
+
+    <template id="external_layout_boxed_inherited" inherit_id="web.external_layout_boxed">
+        <xpath expr="//div[@name='company_address']" position="attributes">
+            <attribute name="t-if">doc_model != "account.move" or (doc_model == "account.move" and o.country_code != "DO")</attribute>
+        </xpath>
+    </template>
+    -->
 
 </odoo>

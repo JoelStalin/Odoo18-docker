@@ -10,9 +10,9 @@ Este documento detalla los cambios necesarios y realizados para migrar los módu
 *   **Localización Dominicana:** Validación contra módulos base de Odoo 18.
 
 ---
-## Progreso de Aplicación de Ajustes (Paso 16) para Odoo 18 (Parcialmente Completado):
+## Progreso de Aplicación de Ajustes (Paso 16 - Anteriormente, ahora consolidado con Paso 14 y 11) para Odoo 18 (Parcialmente Completado):
 
-Se han aplicado las siguientes actualizaciones de manifiestos. Los cambios de código Python se centraron en los archivos problemáticos de fases anteriores (con éxito limitado por herramientas) y en la planificación de la refactorización para la taxonomía de impuestos y la migración de JS.
+Se han aplicado las siguientes actualizaciones de manifiestos. Los cambios de código Python se centraron en los archivos problemáticos de fases anteriores (con éxito limitado por herramientas) y en la refactorización/planificación para la taxonomía de impuestos y la migración de JS.
 
 *   **Actualizaciones de `__manifest__.py` (Versión a `18.0.1.0.0`):**
     *   `invoice_api`: Aplicado.
@@ -27,7 +27,7 @@ Se han aplicado las siguientes actualizaciones de manifiestos. Los cambios de c�
     *   `l10n_do_e_accounting`: Aplicado.
 
 *   **Cambios en Código Python:**
-    *   **Archivos con cambios pendientes (debido a fallos persistentes de herramientas, no reintentados o fallaron de nuevo en esta fase):**
+    *   **Archivos con cambios pendientes (debido a fallos persistentes de herramientas):**
         *   `exo_api/models/account_line_load/account_line_load.py`: Actualización de `super().unlink()` pendiente.
         *   `exo_api/models/inherit/account_move_inherit.py`: Actualización de `super().unlink()` pendiente.
         *   `l10n_do_accounting_report/models/dgii_report.py`: Actualizaciones de `super().create()` y `super().write()` pendientes.
@@ -42,15 +42,17 @@ Se han aplicado las siguientes actualizaciones de manifiestos. Los cambios de c�
     *   `l10n_do_rnc_search/static/src/js/l10n_do_accounting.js`: Sobrescrito con un esqueleto de componente OWL. Requiere crear plantilla QWeb, CSS, pruebas y posible renombrado de archivo JS.
     *   **`l10n_do_pos/static/src/js/*` y `static/src/xml/*` (CRÍTICO):** Marcados para reescritura completa manual y adaptación a la nueva arquitectura y rediseño del PoS de Odoo 18. Esta es la tarea de desarrollo más grande y compleja de la migración.
 
-**Próximos Pasos para Completar la Migración a v18:**
+*   **Refactorización de QWeb:**
+    *   `addons/extra/neo_do_localization/l10n_do_accounting/views/report_invoice.xml`: Refactorizado y sobrescrito.
+    *   `addons/extra/neo_do_localization/l10n_do_accounting/views/report_templates.xml`: Refactorizado (limpieza de comentarios) y sobrescrito.
+    *   **`addons/extra/exo_api/views/inherit/account/account_invoice_portal.xml`**:
+        *   **Estado:** SIN CAMBIOS. Falló `overwrite_file_with_block`. Requiere refactorización manual (mover JS a archivo, validar XPaths, actualizar clases CSS).
+
+**Próximos Pasos para Completar la Migración a v18 (Tareas Manuales/Desarrollo Adicional):**
 *   **Resolución Manual de Problemas de Herramientas:** Aplicar manualmente los cambios de `super()` y el renombrado de archivo donde las herramientas fallaron.
-*   **Implementación Completa de Migración JS a OWL:**
-    *   Desarrollar las plantillas QWeb y CSS para los widgets OWL de `l10n_do_accounting_report` y `l10n_do_rnc_search`.
-    *   Realizar la reescritura completa de todos los componentes y plantillas de `l10n_do_pos`.
-*   **Validación Funcional y Refactorización Adicional:**
-    *   Probar exhaustivamente la lógica de impuestos, contabilidad, NCF, y flujos de PoS en un entorno Odoo 18.
-    *   Refactorizar el código Python según sea necesario basándose en las APIs y comportamientos finales de Odoo 18 y sus módulos base.
-*   **Revisión de Vistas XML y Datos:** Adaptar todos los archivos XML (vistas, datos, seguridad, reportes) a Odoo 18.
+*   **Implementación Completa de Migración JS a OWL:** Especialmente para `l10n_do_pos`.
+*   **Validación Funcional Exhaustiva:** Probar todos los flujos y lógica de negocio en un entorno Odoo 18.
+*   **Revisión y Adaptación de Archivos XML y de Datos restantes.**
 
 ---
-Este informe resume el estado de la migración a Odoo 18. La finalización requerirá un esfuerzo de desarrollo manual significativo, especialmente para el frontend del PoS y la resolución de los problemas con las herramientas de modificación de código.
+Este informe resume el estado de la migración a Odoo 18. La finalización requerirá un esfuerzo de desarrollo manual significativo.
